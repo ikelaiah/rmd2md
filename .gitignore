@@ -36,8 +36,6 @@ dub.selections.json
 
 # End of https://www.toptal.com/developers/gitignore/api/d
 
-# output
+# input
 *.Rmd
 *.rmd
-*.md
-*.MD
