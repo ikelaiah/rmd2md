@@ -27,7 +27,7 @@ void main(string[] args)
 
     if (helpInformation.helpWanted)
     {
-        defaultGetoptPrinter("Rmd to Markdown (md) file converter.\nUsage: rmd2md [options]",
+        defaultGetoptPrinter("Rmd to Markdown (md) file converter.",
             helpInformation.options);
             return;
     }
