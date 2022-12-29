@@ -80,5 +80,5 @@ void main(string[] args)
     }
 
     // Console output a summary
-    io.writeln(programName ~ ": processed " ~ std.conv.text(fileCount) ~ " files");
+    io.writeln(programName ~ ": processed " ~ to!string(fileCount) ~ " files");
 }
