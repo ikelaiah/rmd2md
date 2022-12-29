@@ -48,7 +48,7 @@ void main(string[] args)
 
     io.writeln(programName ~ ": working directory is " ~ inputPath);
 
-    Regex!char re = regex(r"`{3}\{r[a-zA-Z0-9= ]*\}", "g"); // Iterate over all *.d files in current directory and all its subdirectories
+    Regex!char re = regex(r"`{3}\{r[a-zA-Z0-9= ]*\}", "g");
     
     // Get files in specified inputPath variable with a specific extension
     auto rmdFiles = file.dirEntries(inputPath, file.SpanMode.shallow)
