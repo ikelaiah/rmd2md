@@ -20,7 +20,7 @@ An example to convert Rmd to MD using the `dmd` compiler.
 
 ```bash
 $ dmd rmd2md.d
-$ ./rmd2md.exe -p "\<path>\<to>\<Rmd-files>\" -o "\<path>\<to-save>\<Rmd-files>\"
+$ ./rmd2md.exe -p "\path\to\Rmd-files\" -o "\path\to-save\Rmd-files\"
 ```
 
 Alternatively, if you have the dmd compiler installed, you can run this like a script using [`rdmd`](https://dlang.org/rdmd.html) tool.
@@ -28,7 +28,7 @@ Alternatively, if you have the dmd compiler installed, you can run this like a s
 For example.
 
 ```bash
-$ rdmd ./rmd2md.d -p "\<path>\<to>\<Rmd-files>\" -o "\<path>\<to-save>\<Rmd-files>\"
+$ rdmd ./rmd2md.d -p "\path\to\Rmd-files\" -o "\path\to-save\Rmd-files\"
 ```
 
 ## License
