@@ -39,3 +39,10 @@ dub.selections.json
 # input
 *.Rmd
 *.rmd
+
+# output
+*.R
+*.md
+*.csv
+*.Rdata
+*.json
