@@ -1,64 +1,91 @@
 module rmd2md;
 
 import std.algorithm;
-import io = std.stdio;
+import std.stdio;
 import file = std.file;
 import std.conv;
 import std.regex;
 import std.getopt;
 import std.path;
+import std.datetime;
+import std.parallelism;
+import std.range;
 
 void main(string[] args)
 {
+    // Set variables for the main program
+    string programName = "Rmd2md";
+
+    // Setup Regex for capturing Rmd code snippet header
+    Regex!char re = regex(r"`{3}\{r[a-zA-Z0-9= ]*\}", "g");
+
     // Set default values for the arguments
     string inputPath = file.getcwd();
     string fileEndsWith = ".Rmd";
-    
-    // Set variables for the main program
-    string programName = "Rmd2md";
-    int fileCount = 0;
+    string outputPath = file.getcwd();
 
     // Set GetOpt variables
     auto helpInformation = getopt(
         args,
         "path|p", "Path of Rmd files. Default: current working directory.", &inputPath,
-        "fext|e", "Extension of Rmd files. Default: `.Rmd`", &fileEndsWith
+        "fext|e", "Extension of Rmd files. Default: `.Rmd`", &fileEndsWith,
+        "fout|o", "Output folder to save the MD files. Default: current working directory.", &outputPath
     );
 
     if (helpInformation.helpWanted)
     {
         defaultGetoptPrinter("Rmd to Markdown (md) file converter.",
             helpInformation.options);
-            return;
+        return;
     }
 
     // is the path valid?
     if (!std.path.isValidPath(inputPath))
     {
-        io.writeln(programName ~ ": invalid path");
+        writeln(programName ~ ": invalid input path");
+        return;
+    }
+
+    // is output path valid?
+    if (!std.path.isValidPath(outputPath))
+    {
+        writeln(programName ~ ": invalid output path");
         return;
     }
 
     // is file extension valid?
     if (!startsWith(fileEndsWith, "."))
     {
-        io.writeln(programName ~ ": invalid extension given");
+        writeln(programName ~ ": invalid extension given");
         return;
     }
 
-    io.writeln(programName ~ ": working directory is " ~ inputPath);
+    writeln(programName ~ ": input directory is " ~ inputPath);
+    writeln(programName ~ ": output directory is " ~ outputPath);
+    writeln(programName ~ ": ---");
 
-    Regex!char re = regex(r"`{3}\{r[a-zA-Z0-9= ]*\}", "g");
-    
+    // Get no files in specified inputPath variable with a specific extension
+    auto rmdFiles_for_counting = file.dirEntries(inputPath, file.SpanMode.shallow)
+        .filter!(f => f.isFile)
+        .filter!(f => f.name.endsWith(fileEndsWith));
+
+    writeln(programName ~ ": found - " ~ to!string(rmdFiles_for_counting.walkLength) ~ fileEndsWith ~ " file(s)");
+    writeln(programName ~ ": ---");
+
+    // Get start time
+    auto stattime = Clock.currTime();
+
+    // Process each Rmd file
+    int fileWrittenCount = 0;
+
     // Get files in specified inputPath variable with a specific extension
     auto rmdFiles = file.dirEntries(inputPath, file.SpanMode.shallow)
         .filter!(f => f.isFile)
         .filter!(f => f.name.endsWith(fileEndsWith));
 
-    // Proces each Rmd file
-    foreach (file.DirEntry item; rmdFiles)
+    foreach (file.DirEntry item; parallel(rmdFiles))
     {
-        io.writeln(programName ~ ": processing " ~ item.name);
+        writeln(Clock.currTime().toISOExtString, ": processing " ~ item.name);
 
         try
         {
@@ -67,18 +94,28 @@ void main(string[] args)
             // Replace ```{r} or ```{r option1=value} with ```R
             string modified = replaceAll(content, re, "```R");
             // Set the Markdown output file
-            string outputFile = replaceAll(item.name, regex(r".Rmd"), ".md");
+            string outputFile = replaceAll(baseName(item.name), regex(r".Rmd"), ".md");
+            // Build an output path, using output path and baseName(item.name)
+            string outputFilenamePath = buildPath(outputPath, outputFile);
             // Save output Markdown file
-            file.write(outputFile, modified);
+            file.write(outputFilenamePath, modified);
+            writeln(Clock.currTime().toISOExtString, ": written " ~ outputFilenamePath);
             // Increase counter to indicate number of files processed
-            fileCount++;
+            fileWrittenCount++;
         }
         catch (file.FileException e)
         {
-            io.writeln(programName ~ ": " ~ e.msg);
+            writeln(programName ~ ": " ~ e.msg);
         }
     }
 
+    writeln(programName ~ ": ---");
+
+    // Gett end clock
+    auto endttime = Clock.currTime();
+    auto duration = endttime - stattime;
+    writeln(programName ~ ": duration - ", duration);
+
     // Console output a summary
-    io.writeln(programName ~ ": processed " ~ to!string(fileCount) ~ " files");
+    writeln(programName ~ ": written " ~ to!string(fileWrittenCount) ~ " file(s)");
 }
